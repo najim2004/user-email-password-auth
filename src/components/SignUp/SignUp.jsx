@@ -1,12 +1,12 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth";
 import { auth } from "../../firebase.config";
 import { useState } from "react";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { FaRegEyeSlash } from "react-icons/fa";
+import { Link } from "react-router-dom";
 const SignUp = () => {
     const [pValidation, setPValidation] = useState('');
     const [pShowHied, setPShowHied] = useState(false);
-
     const handleSignUp = (e) => {
         e.preventDefault();
         setPValidation('');
@@ -22,7 +22,18 @@ const SignUp = () => {
             .then((userCredential) => {
                 const user = userCredential.user;
                 console.log(user);
+                updateProfile(user,{
+                    displayName: username,
+                    photoURL: "https://example.com/jane-q-user/profile.jpg"
+                })
                 alert('User created successfully')
+                sendEmailVerification(auth.currentUser)
+                    .then((emailVerification) => {
+                        console.log(emailVerification);
+                        alert('Verification email sent to'+ email);
+
+                    })
+                    .catch((error) => alert(error.message));
 
             })
             .catch((error) => alert(error.message));
@@ -56,16 +67,20 @@ const SignUp = () => {
                         <label className="input  mb-5 input-bordered !outline-black flex items-center  gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 opacity-70"><path fillRule="evenodd" d="M14 6a4 4 0 0 1-4.899 3.899l-1.955 1.955a.5.5 0 0 1-.353.146H5v1.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2.293a.5.5 0 0 1 .146-.353l3.955-3.955A4 4 0 1 1 14 6Zm-4-2a.75.75 0 0 0 0 1.5.5.5 0 0 1 .5.5.75.75 0 0 0 1.5 0 2 2 0 0 0-2-2Z" clipRule="evenodd" /></svg>
                             <input type={pShowHied ? "text" : "password"} required name="password" placeholder="Password" className="grow " />
-                            <span className="text-2xl" onClick={() => setPShowHied(!pShowHied)}>
+                            <span className="text-2xl h-full flex items-center" onClick={() => setPShowHied(!pShowHied)}>
 
                                 {pShowHied ? <MdOutlineRemoveRedEye></MdOutlineRemoveRedEye> : <FaRegEyeSlash></FaRegEyeSlash>
                                 }
                             </span>
                         </label>
                         {pValidation && <label className="text-red-500">{pValidation}</label>}
-
+                        <div className="flex items-center gap-2">
+                            <input type="checkbox" name="terms" required id="" />
+                            <label htmlFor="">Accepted our <a className="text-red-400" href="#">terms and conditions</a></label>
+                        </div>
                         <input className="btn mt-8 bg-green-400 text-lg font-semibold text-white" type="submit" value="Sign Up Now" />
                     </form>
+                    <p className="mt-2">Already have an account? Please <Link className="text-red-500" to={'/signin'}>Sign In</Link></p>
                 </div>
             </div>
         </div>
